@@ -1,17 +1,27 @@
 <header class="bg-blue-600 text-white shadow-lg">
-  <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-    <div class="text-2xl font-bold tracking-tighter">
-      MyAngularApp
-    </div>
+    <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="text-2xl font-bold tracking-tighter">
+            MyAngularApp
+        </div>
 
-    <ul class="flex space-x-6">
-      <li><a href="" class="hover:text-blue-200 transition">Home</a></li>
-      <li><a href="#" class="hover:text-blue-200 transition">Features</a></li>
-      <li><a href="contact" class="hover:text-blue-200 transition">Contact</a></li>
-    </ul>
+        <nav class="flex space-x-6">
+            <a [routerLink]="['/']" 
+             routerLinkActive="text-yellow-400"
+             [routerLinkActiveOptions]="{exact: true}"
+                class="hover:text-blue-200 transition">Home</a>
+            <a [routerLink]="['/about']" 
+            routerLinkActive="text-yellow-400" 
+            [routerLinkActiveOptions]="{exact: true}"
+                class="hover:text-blue-200 transition">About Us</a>
+            <a [routerLink]="['/contact']" 
+            routerLinkActive="text-yellow-400" 
+            [routerLinkActiveOptions]="{exact: true}"
+                class="hover:text-blue-200 transition">Contact</a>
+        </nav>
 
-    <button class="bg-white text-blue-600 px-4 py-2 rounded-full font-semibold hover:bg-blue-50 transition">
-       <a href="login" class="hover:text-blue-200 transition">Get Started</a>
-    </button>
-  </nav>
+
+        <button class="bg-white text-blue-600 px-4 py-2 rounded-full font-semibold hover:bg-blue-50 transition">
+            <a href="login" class="hover:text-blue-200 transition">Get Started</a>
+        </button>
+    </nav>
 </header>
