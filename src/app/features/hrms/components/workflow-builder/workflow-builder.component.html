@@ -1,0 +1,153 @@
+<div class="space-y-6">
+  <div>
+    <h2 class="text-2xl font-bold tracking-tight text-white">Approval Workflow Management</h2>
+    <p class="text-sm text-slate-400">Design routing templates, validation rules, and hierarchy steps for ERP transactions.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left column: Workflow list -->
+    <div class="space-y-4">
+      <div class="px-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Templates</div>
+      
+      @for (wf of workflows(); track wf.id) {
+        <div (click)="selectWorkflow(wf.id)" 
+             [class.border-indigo-600]="selectedWorkflowId() === wf.id"
+             [class.bg-slate-900/80]="selectedWorkflowId() === wf.id"
+             [class.bg-slate-950/40]="selectedWorkflowId() !== wf.id"
+             class="border border-slate-800 rounded-xl p-4 cursor-pointer transition hover:border-slate-700">
+          <div class="flex justify-between items-start">
+            <span class="bg-indigo-900/30 text-indigo-400 text-[10px] font-bold px-2 py-0.5 rounded border border-indigo-750">
+              {{ wf.category }}
+            </span>
+            <span class="inline-flex items-center">
+              <span class="w-1.5 h-1.5 rounded-full mr-1.5" [class.bg-emerald-500]="wf.status === 'Active'" [class.bg-slate-500]="wf.status === 'Inactive'"></span>
+              <span class="text-xs text-slate-400">{{ wf.status }}</span>
+            </span>
+          </div>
+          <h4 class="font-bold text-white mt-2">{{ wf.name }}</h4>
+          <p class="text-xs text-slate-400 mt-1 line-clamp-2">{{ wf.description }}</p>
+          <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-900 text-xs">
+            <span class="text-slate-500 font-mono">{{ wf.steps.length }} routing nodes</span>
+            <button (click)="$event.stopPropagation(); toggleWorkflowStatus(wf)" class="text-indigo-400 hover:text-indigo-300 font-semibold">
+              Toggle State
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Right column: Flow Visualizer & Editor -->
+    <div class="lg:col-span-2 bg-slate-900/30 border border-slate-850 rounded-2xl p-6 space-y-6">
+      @if (selectedWorkflow(); as wf) {
+        <div class="flex justify-between items-center pb-4 border-b border-slate-850">
+          <div>
+            <h3 class="text-lg font-bold text-white">{{ wf.name }}</h3>
+            <p class="text-xs text-slate-500">Route Code: {{ wf.id }} · Status: {{ wf.status }}</p>
+          </div>
+          <button (click)="openAddStepModal()" [disabled]="wf.status === 'Inactive'" class="bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700 text-white text-xs font-semibold py-2 px-3 rounded-lg transition">
+            + Add Approval Step
+          </button>
+        </div>
+
+        <p class="text-sm text-slate-300 leading-relaxed">{{ wf.description }}</p>
+
+        <!-- Vertical Flow Diagram -->
+        <div class="relative pl-8 space-y-8 before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-800">
+          
+          <!-- Start Node -->
+          <div class="relative flex items-center">
+            <div class="absolute -left-8 w-7 h-7 rounded-full bg-slate-850 border border-slate-700 flex items-center justify-center text-[10px] text-slate-400 font-bold">
+              0
+            </div>
+            <div class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex-1 flex justify-between items-center">
+              <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Trigger Event</p>
+                <p class="text-sm font-medium text-slate-200">Employee initiates a {{ wf.category }} request</p>
+              </div>
+              <span class="text-xs text-indigo-400 font-semibold font-mono">Submit</span>
+            </div>
+          </div>
+
+          <!-- Flow Steps Nodes -->
+          @for (step of wf.steps; track step.id; let idx = $index) {
+            <div class="relative flex items-center">
+              <!-- Node Number badge -->
+              <div class="absolute -left-8 w-7 h-7 rounded-full bg-indigo-900/50 border border-indigo-700/50 text-indigo-300 flex items-center justify-center font-bold text-xs">
+                {{ idx + 1 }}
+              </div>
+              
+              <!-- Content Card -->
+              <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex-1 flex justify-between items-center relative hover:border-slate-750 transition">
+                <div>
+                  <p class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">{{ step.role }}</p>
+                  <p class="text-sm font-medium text-slate-200 mt-0.5">{{ step.approverName }}</p>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                  @if (step.status === 'Approved') {
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Approved</span>
+                  } @else if (step.status === 'Rejected') {
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">Rejected</span>
+                  } @else {
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Awaiting Decision</span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- End Node -->
+          <div class="relative flex items-center">
+            <div class="absolute -left-8 w-7 h-7 rounded-full bg-emerald-950 border border-emerald-800/80 flex items-center justify-center text-[10px] text-emerald-400 font-bold">
+              ✓
+            </div>
+            <div class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex-1">
+              <p class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Final Approval</p>
+              <p class="text-sm font-medium text-slate-400 mt-0.5">Database commit and notification email dispatched</p>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADD STEP -->
+@if (isAddStepModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl relative">
+      <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
+        <h3 class="font-bold text-white text-lg">Add Validation Node</h3>
+        <button (click)="closeAddStepModal()" class="text-slate-400 hover:text-white text-xl font-bold">×</button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Approval Role / Authority</label>
+          <select [(ngModel)]="newStep.role" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+            @for (role of roles; track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Designated Approver Name</label>
+          <input type="text" 
+                 [(ngModel)]="newStep.approverName" 
+                 placeholder="e.g. Jordan Sparks"
+                 class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-650 focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div class="pt-4 border-t border-slate-850 flex justify-end space-x-3">
+          <button (click)="closeAddStepModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-5 py-2.5 rounded-xl text-sm font-medium transition">
+            Cancel
+          </button>
+          <button (click)="saveStep()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-indigo-500/20 transition">
+            Insert Step
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,319 @@
+<div class="space-y-6">
+  <!-- Section Title -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div>
+      <h2 class="text-2xl font-bold tracking-tight text-white">Performance, Talent & Careers</h2>
+      <p class="text-sm text-slate-400">Manage Q1 goal settings, execute 360 appraisals, and trace succession career paths.</p>
+    </div>
+    
+    <button (click)="openFeedbackModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-lg transition">
+      Request Peer Feedback
+    </button>
+  </div>
+
+  <!-- Subtabs navigation -->
+  <div class="border-b border-slate-850 flex space-x-6">
+    <button (click)="setSubTab('appraisals')" 
+            [class.border-indigo-500]="activeSubTab() === 'appraisals'"
+            [class.text-white]="activeSubTab() === 'appraisals'"
+            [class.border-transparent]="activeSubTab() !== 'appraisals'"
+            [class.text-slate-400]="activeSubTab() !== 'appraisals'"
+            class="pb-3 border-b-2 font-medium text-sm transition">
+      Performance Appraisals ({{ appraisals().length }})
+    </button>
+    <button (click)="setSubTab('feedback')" 
+            [class.border-indigo-500]="activeSubTab() === 'feedback'"
+            [class.text-white]="activeSubTab() === 'feedback'"
+            [class.border-transparent]="activeSubTab() !== 'feedback'"
+            [class.text-slate-400]="activeSubTab() !== 'feedback'"
+            class="pb-3 border-b-2 font-medium text-sm transition">
+      360° Peer Feedback ({{ peerFeedbacks().length }})
+    </button>
+    <button (click)="setSubTab('succession')" 
+            [class.border-indigo-500]="activeSubTab() === 'succession'"
+            [class.text-white]="activeSubTab() === 'succession'"
+            [class.border-transparent]="activeSubTab() !== 'succession'"
+            [class.text-slate-400]="activeSubTab() !== 'succession'"
+            class="pb-3 border-b-2 font-medium text-sm transition">
+      Succession & Career Paths
+    </button>
+  </div>
+
+  <!-- SUB-TAB 1: APPRAISALS -->
+  @if (activeSubTab() === 'appraisals') {
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      @for (app of appraisals(); track app.id) {
+        <div class="bg-slate-900/40 border border-slate-850 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-slate-750 transition">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs text-indigo-400 font-mono font-semibold">{{ app.reviewPeriod }}</p>
+              <h3 class="text-lg font-bold text-white mt-1">{{ app.employeeName }}</h3>
+            </div>
+            
+            <span [class]="app.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'" 
+                  class="text-[10px] font-bold px-2.5 py-0.5 rounded border uppercase">
+              {{ app.status }}
+            </span>
+          </div>
+
+          <div class="space-y-2">
+            <span class="text-[10px] uppercase font-bold text-slate-500">Appraisal Goals:</span>
+            <ul class="text-xs text-slate-350 list-disc pl-4 space-y-1">
+              @for (goal of app.goals; track goal) {
+                <li>{{ goal }}</li>
+              }
+            </ul>
+          </div>
+
+          <div class="border-t border-slate-850 pt-4 flex justify-between items-center text-xs">
+            <div class="flex items-center space-x-1">
+              <span class="text-slate-550">Score:</span>
+              <span class="font-bold text-slate-200 font-mono">{{ app.overallScore }} / 5.0</span>
+            </div>
+            <button (click)="viewAppraisalDetail(app)" class="text-indigo-400 hover:text-indigo-300 font-bold">
+              Review Appraisal ➜
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- SUB-TAB 2: FEEDBACK CYCLES -->
+  @if (activeSubTab() === 'feedback') {
+    <div class="space-y-4">
+      @for (feed of peerFeedbacks(); track feed.id) {
+        <div class="bg-slate-950 border border-slate-850 rounded-2xl p-5 space-y-3 relative">
+          <div class="flex justify-between items-start">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 rounded bg-violet-900/30 text-violet-400 font-bold text-xs flex items-center justify-center">
+                {{ feed.reviewerName.charAt(0) }}
+              </div>
+              <div>
+                <h4 class="font-bold text-slate-200 text-sm">{{ feed.reviewerName }}</h4>
+                <p class="text-[10px] text-slate-500">Relationship: {{ feed.relationship }} · {{ feed.feedbackDate }}</p>
+              </div>
+            </div>
+            
+            <div class="flex space-x-3 text-xs">
+              <div class="text-center bg-slate-900 px-2.5 py-1 rounded border border-slate-850">
+                <span class="text-slate-500 block text-[9px] uppercase">LDR</span>
+                <span class="font-bold text-slate-200 font-mono">{{ feed.competencyScores.leadership }}/5</span>
+              </div>
+              <div class="text-center bg-slate-900 px-2.5 py-1 rounded border border-slate-850">
+                <span class="text-slate-500 block text-[9px] uppercase">TM</span>
+                <span class="font-bold text-slate-200 font-mono">{{ feed.competencyScores.teamwork }}/5</span>
+              </div>
+              <div class="text-center bg-slate-900 px-2.5 py-1 rounded border border-slate-850">
+                <span class="text-slate-500 block text-[9px] uppercase">EXEC</span>
+                <span class="font-bold text-slate-200 font-mono">{{ feed.competencyScores.execution }}/5</span>
+              </div>
+            </div>
+          </div>
+          
+          <p class="text-xs text-slate-400 italic leading-relaxed pl-11">
+            "{{ feed.comments }}"
+          </p>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- SUB-TAB 3: SUCCESSION & CAREERS -->
+  @if (activeSubTab() === 'succession') {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Career Path Flow Chart -->
+      <div class="lg:col-span-2 bg-slate-900/30 border border-slate-850 rounded-2xl p-5 space-y-6">
+        <h3 class="font-bold text-white text-md border-b border-slate-850 pb-2">Technical Roster Career Map</h3>
+        
+        <div class="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-850">
+          @for (milestone of careerMilestones; track milestone.role; let last = $last) {
+            <div class="relative">
+              <div class="absolute -left-6 w-5 h-5 rounded-full bg-indigo-900/40 border-2 border-indigo-500 flex items-center justify-center">
+                <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+              </div>
+              
+              <div class="bg-slate-950 border border-slate-850 rounded-xl p-4 space-y-3">
+                <div class="flex justify-between items-start">
+                  <h4 class="font-bold text-slate-200 text-sm">{{ milestone.role }}</h4>
+                  <span class="text-[10px] text-slate-500 font-mono">Exp required: {{ milestone.minExperienceYears }}+ yrs</span>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <span class="text-[10px] uppercase font-bold text-slate-555">Prerequisites</span>
+                    <div class="flex flex-wrap gap-1 mt-1">
+                      @for (cert of milestone.requiredCertifications; track cert) {
+                        <span class="bg-indigo-950/30 text-indigo-400 border border-indigo-900/60 text-[9px] px-1.5 py-0.5 rounded">
+                          {{ cert }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                  <div>
+                    <span class="text-[10px] uppercase font-bold text-slate-555">Core Competencies</span>
+                    <ul class="list-disc pl-4 mt-1 text-[11px] text-slate-400 space-y-0.5">
+                      @for (skill of milestone.keyCompetencies; track skill) {
+                        <li>{{ skill }}</li>
+                      }
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Succession Plan list -->
+      <div class="space-y-4">
+        <div class="px-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Succession Pipelines</div>
+        
+        @for (plan of successionPlans(); track plan.keyRole) {
+          <div class="bg-slate-950 border border-slate-850 rounded-xl p-4 space-y-4">
+            <div>
+              <span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[9px] font-bold px-2 py-0.5 rounded uppercase">
+                CRITICAL ROLE
+              </span>
+              <h4 class="font-bold text-white text-sm mt-1.5">{{ plan.keyRole }}</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Incumbent: {{ plan.currentIncumbent }}</p>
+            </div>
+            
+            <div class="space-y-2">
+              <span class="text-[10px] font-bold text-slate-500 uppercase block">Potential Successors:</span>
+              
+              @for (succ of plan.potentialSuccessors; track succ.employeeId) {
+                <div class="bg-slate-900 border border-slate-850 p-2.5 rounded-lg flex justify-between items-center text-xs">
+                  <div>
+                    <p class="font-semibold text-slate-200">{{ succ.name }}</p>
+                    <p class="text-[10px] text-slate-550 font-mono">{{ succ.employeeId }}</p>
+                  </div>
+                  <span class="text-[10px] font-bold font-mono text-emerald-400 bg-emerald-950/30 px-1.5 py-0.5 rounded border border-emerald-900/50">
+                    Match: {{ succ.matchPercentage }}%
+                  </span>
+                </div>
+              }
+            </div>
+
+            <div class="border-t border-slate-900 pt-3 flex justify-between items-center text-[10px] text-slate-500 font-semibold">
+              <span>Timeline: {{ plan.readinessRating }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- MODAL: ADD PEER REVIEW -->
+@if (isFeedbackModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl relative">
+      <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
+        <h3 class="font-bold text-white text-lg">Leave Peer Feedback</h3>
+        <button (click)="closeFeedbackModal()" class="text-slate-400 hover:text-white text-xl font-bold">×</button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Target Employee</label>
+          <select [(ngModel)]="newFeedback.employeeId" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+            @for (emp of employees(); track emp.id) {
+              <option [value]="emp.id">{{ emp.name }} ({{ emp.id }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-[10px] font-semibold text-slate-500 uppercase mb-1">Leadership</label>
+            <input type="number" min="1" max="5" [(ngModel)]="newFeedback.leadership" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold text-slate-500 uppercase mb-1">Teamwork</label>
+            <input type="number" min="1" max="5" [(ngModel)]="newFeedback.teamwork" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold text-slate-500 uppercase mb-1">Execution</label>
+            <input type="number" min="1" max="5" [(ngModel)]="newFeedback.execution" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Comments / Key Strengths</label>
+          <textarea [(ngModel)]="newFeedback.comments" 
+                    rows="3" 
+                    placeholder="Enter peer comments and developmental feedback details..."
+                    class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-650 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+        </div>
+
+        <div class="pt-4 border-t border-slate-850 flex justify-end space-x-3">
+          <button (click)="closeFeedbackModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-5 py-2.5 rounded-xl text-sm font-medium transition">
+            Cancel
+          </button>
+          <button (click)="saveFeedback()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-indigo-500/20 transition">
+            Submit Review
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL: APPRAISAL REVIEW DETAIL -->
+@if (isAppraisalModalOpen() && selectedAppraisal(); as app) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl relative">
+      <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
+        <h3 class="font-bold text-white text-lg">Appraisal Decision Sheet</h3>
+        <button (click)="closeAppraisalModal()" class="text-slate-400 hover:text-white text-xl font-bold">×</button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-2 text-xs">
+          <div>
+            <span class="text-slate-500">Employee Name:</span>
+            <span class="text-slate-200 font-bold ml-2">{{ app.employeeName }}</span>
+          </div>
+          <div>
+            <span class="text-slate-500">Review Period:</span>
+            <span class="text-slate-350 ml-2">{{ app.reviewPeriod }}</span>
+          </div>
+          <div>
+            <span class="text-slate-500">Designated Manager:</span>
+            <span class="text-slate-350 ml-2">{{ app.reviewerName }}</span>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <span class="text-xs font-bold text-slate-400 uppercase">Review Feedback Summary</span>
+          <p class="text-xs text-slate-350 italic bg-slate-950 p-3 rounded-lg border border-slate-850">
+            "{{ app.feedbackText }}"
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Adjust Final Rating Score</label>
+          <div class="flex space-x-2">
+            @for (score of [1, 2, 3, 4, 5]; track score) {
+              <button (click)="updateAppraisalScore(app, score)" 
+                      [class.bg-indigo-600]="app.overallScore === score"
+                      [class.text-white]="app.overallScore === score"
+                      [class.bg-slate-950]="app.overallScore !== score"
+                      class="flex-1 border border-slate-800 py-2.5 rounded-xl font-mono text-sm font-bold hover:bg-indigo-750 transition text-slate-300">
+                {{ score }}.0
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-slate-850 flex justify-end bg-slate-950/20">
+        <button (click)="closeAppraisalModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 px-5 rounded-xl text-sm font-semibold transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+}

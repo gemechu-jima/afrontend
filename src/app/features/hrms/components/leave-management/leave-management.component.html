@@ -1,0 +1,174 @@
+<div class="space-y-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <h2 class="text-2xl font-bold tracking-tight text-white">Leave & Absence Management</h2>
+      <p class="text-sm text-slate-400">Review employee time-off, approve balances, and submit leave requests.</p>
+    </div>
+    <button (click)="openRequestModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-xl shadow-lg transition flex items-center space-x-2">
+      <span>File Leave Request</span>
+    </button>
+  </div>
+
+  <!-- Leave balances info -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+      <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Awaiting Verification</p>
+      <h4 class="text-3xl font-black mt-1 text-amber-500">{{ pendingCount() }} applications</h4>
+      <p class="text-xs text-slate-400 mt-2">Requires administrator verification</p>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+      <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Approved Absences</p>
+      <h4 class="text-3xl font-black mt-1 text-indigo-400">{{ approvedCount() }} leaves</h4>
+      <p class="text-xs text-slate-400 mt-2">Logged in current quarter</p>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+      <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Standard Entitlement</p>
+      <h4 class="text-3xl font-black mt-1 text-emerald-400">22 Days / yr</h4>
+      <p class="text-xs text-slate-400 mt-2">Prorated global annual leave allocation</p>
+    </div>
+  </div>
+
+  <!-- Active Applications Table -->
+  <div class="bg-slate-950 border border-slate-850 rounded-2xl overflow-hidden">
+    <div class="p-5 border-b border-slate-850 bg-slate-900/10">
+      <h3 class="font-bold text-white text-md">Absence Requests Register</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-800 text-xs font-semibold text-slate-400 bg-slate-900/30">
+            <th class="px-6 py-4">Employee</th>
+            <th class="px-6 py-4">Leave Type</th>
+            <th class="px-6 py-4">Duration</th>
+            <th class="px-6 py-4">Reason</th>
+            <th class="px-6 py-4">Status</th>
+            <th class="px-6 py-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800 text-sm">
+          @for (req of leaveRequests(); track req.id) {
+            <tr class="hover:bg-slate-900/40 transition">
+              <td class="px-6 py-4 font-semibold text-slate-200">
+                {{ req.employeeName }}
+                <div class="text-[10px] text-slate-500 font-mono">{{ req.employeeId }}</div>
+              </td>
+              <td class="px-6 py-4">
+                <span class="bg-slate-900 border border-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded-lg">
+                  {{ req.type }}
+                </span>
+              </td>
+              <td class="px-6 py-4">
+                <p class="text-slate-300 font-mono text-xs">{{ req.startDate }} to {{ req.endDate }}</p>
+                <p class="text-xs text-indigo-400 mt-0.5">({{ req.days }} working days)</p>
+              </td>
+              <td class="px-6 py-4 text-xs text-slate-400 italic max-w-xs truncate" [title]="req.reason">
+                "{{ req.reason }}"
+              </td>
+              <td class="px-6 py-4">
+                @if (req.status === 'Pending') {
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Pending</span>
+                } @else if (req.status === 'Approved') {
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Approved</span>
+                } @else {
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Rejected</span>
+                }
+              </td>
+              <td class="px-6 py-4 text-right">
+                @if (req.status === 'Pending') {
+                  <div class="flex justify-end space-x-2">
+                    <button (click)="approve(req.id)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition">
+                      Approve
+                    </button>
+                    <button (click)="reject(req.id)" class="bg-rose-900/60 hover:bg-rose-800/80 text-rose-200 border border-rose-700/50 py-1.5 px-3 rounded-lg text-xs transition">
+                      Reject
+                    </button>
+                  </div>
+                } @else {
+                  <span class="text-xs text-slate-500 italic">Completed</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: REQUEST LEAVE -->
+@if (isRequestModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl relative">
+      <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
+        <h3 class="font-bold text-white text-lg">Submit Leave Application</h3>
+        <button (click)="closeRequestModal()" class="text-slate-400 hover:text-white text-xl font-bold">×</button>
+      </div>
+
+      <form (ngSubmit)="submitRequest()" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Applying Employee</label>
+          <select [(ngModel)]="newLeave.employeeId" 
+                  name="employeeId" 
+                  class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+            @for (emp of employees(); track emp.id) {
+              <option [value]="emp.id">{{ emp.name }} ({{ emp.id }})</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Absence Type</label>
+          <select [(ngModel)]="newLeave.type" 
+                  name="type" 
+                  class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+            <option value="Annual Leave">Annual Leave (Vacation)</option>
+            <option value="Sick Leave">Sick Leave</option>
+            <option value="Maternity/Paternity">Maternity/Paternity Leave</option>
+            <option value="Unpaid Leave">Unpaid Leave</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Start Date</label>
+            <input type="date" 
+                   [(ngModel)]="newLeave.startDate" 
+                   name="startDate" 
+                   required
+                   class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">End Date</label>
+            <input type="date" 
+                   [(ngModel)]="newLeave.endDate" 
+                   name="endDate" 
+                   required
+                   class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Reason / Description</label>
+          <textarea [(ngModel)]="newLeave.reason" 
+                    name="reason" 
+                    rows="3" 
+                    placeholder="Specify reason for absence..."
+                    class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-650 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+        </div>
+
+        <div class="pt-4 border-t border-slate-850 flex justify-end space-x-3">
+          <button type="button" 
+                  (click)="closeRequestModal()" 
+                  class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-5 py-2.5 rounded-xl text-sm font-medium transition">
+            Cancel
+          </button>
+          <button type="submit" 
+                  class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-indigo-500/20 transition">
+            Submit Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -1,0 +1,144 @@
+<div class="space-y-6">
+  <div>
+    <h2 class="text-2xl font-bold tracking-tight text-white">Digital Onboarding & Portals</h2>
+    <p class="text-sm text-slate-400">Track task completion checklists, verify legal docs, and manage setups for new hires.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left panel: New Hire Profiles -->
+    <div class="space-y-4">
+      <div class="px-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Onboarding Candidates</div>
+      
+      @for (hire of newHiresList(); track hire.id) {
+        <div (click)="selectHire(hire.id)" 
+             [class.border-indigo-600]="selectedCandidateId() === hire.id"
+             [class.bg-slate-900/80]="selectedCandidateId() === hire.id"
+             [class.bg-slate-950/40]="selectedCandidateId() !== hire.id"
+             class="border border-slate-800 rounded-xl p-4 cursor-pointer transition hover:border-slate-700">
+          <div class="flex justify-between items-start">
+            <span class="bg-indigo-900/30 text-indigo-400 text-[10px] font-bold px-2 py-0.5 rounded border border-indigo-750">
+              {{ hire.jobTitle }}
+            </span>
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/20 uppercase">
+              {{ hire.stage }}
+            </span>
+          </div>
+          <h4 class="font-bold text-white mt-2">{{ hire.name }}</h4>
+          <p class="text-xs text-slate-400 mt-1">{{ hire.email }}</p>
+          
+          <div class="mt-3 pt-3 border-t border-slate-900 flex justify-between items-center text-xs">
+            <span class="text-slate-500">Target Start: July 1, 2026</span>
+            <span class="text-indigo-400 font-bold">Select ➜</span>
+          </div>
+        </div>
+      } @empty {
+        <div class="bg-slate-950 border border-slate-800 p-6 rounded-xl text-center text-xs text-slate-500 italic">
+          No candidates currently in Offers or Onboarding phases. Go to recruitment and hire applicants.
+        </div>
+      }
+    </div>
+
+    <!-- Right panel: Checklist & Document Vault -->
+    @if (selectedCandidate(); as candidate) {
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Progress Summary Header -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-center gap-6">
+          <div class="space-y-1 text-center sm:text-left">
+            <h3 class="text-lg font-bold text-white">{{ candidate.name }} - Onboarding Progress</h3>
+            <p class="text-xs text-slate-400">Review onboarding status before active service commences.</p>
+          </div>
+          
+          <div class="flex flex-col items-center justify-center">
+            <div class="w-16 h-16 rounded-full border-4 border-slate-800 border-t-indigo-500 flex items-center justify-center font-bold text-sm text-indigo-300 font-mono">
+              {{ onboardingProgress() }}%
+            </div>
+            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-1">Checklist Complete</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Tasks Checklist -->
+          <div class="bg-slate-900/30 border border-slate-850 rounded-2xl p-5 space-y-4">
+            <h3 class="font-bold text-white text-sm">Provisioning Checklist</h3>
+            
+            <div class="space-y-3">
+              @for (task of hireTasks(); track task.id) {
+                <div class="flex items-start space-x-3 bg-slate-950 p-3 rounded-xl border border-slate-800/80 hover:border-slate-750 transition">
+                  <input type="checkbox" 
+                         [checked]="task.completed"
+                         (change)="toggleTask(task.id)"
+                         class="w-4.5 h-4.5 rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-0 focus:ring-offset-0 cursor-pointer mt-0.5">
+                  <div class="flex-1">
+                    <span [class.line-through]="task.completed" 
+                          [class.text-slate-500]="task.completed"
+                          [class.text-slate-200]="!task.completed"
+                          class="text-xs font-semibold leading-tight block">
+                      {{ task.taskName }}
+                    </span>
+                    <span [ngClass]="getCategoryBadgeClass(task.category)" 
+                          class="inline-block text-[8px] font-bold px-1.5 py-0.2 rounded mt-1.5 uppercase font-mono">
+                      {{ task.category }}
+                    </span>
+                  </div>
+                </div>
+              } @empty {
+                <p class="text-xs text-slate-500 italic text-center py-4">No tasks found for this hire. Check hiring status in ATS.</p>
+              }
+            </div>
+          </div>
+
+          <!-- Document Vault Simulator -->
+          <div class="bg-slate-900/30 border border-slate-850 rounded-2xl p-5 space-y-4">
+            <h3 class="font-bold text-white text-sm">Document Verification Vault</h3>
+            
+            <div class="space-y-3 text-xs">
+              <!-- Doc 1 -->
+              <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl flex justify-between items-center">
+                <div>
+                  <p class="font-semibold text-slate-300">W-4 Form Tax Profile</p>
+                  <p class="text-[10px] text-slate-500 font-mono mt-0.5">w4_filled_june2026.pdf</p>
+                </div>
+                <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold px-2 py-0.5 rounded">
+                  Verified
+                </span>
+              </div>
+
+              <!-- Doc 2 -->
+              <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl flex justify-between items-center">
+                <div>
+                  <p class="font-semibold text-slate-300">I-9 Work Authorization</p>
+                  <p class="text-[10px] text-slate-500 font-mono mt-0.5">i9_documents_passport.pdf</p>
+                </div>
+                <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold px-2 py-0.5 rounded">
+                  Verified
+                </span>
+              </div>
+
+              <!-- Doc 3 -->
+              <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl flex justify-between items-center">
+                <div>
+                  <p class="font-semibold text-slate-300">Mutual NDA Agreement</p>
+                  <p class="text-[10px] text-slate-500 font-mono mt-0.5">NDA_signed_electronic.pdf</p>
+                </div>
+                <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold px-2 py-0.5 rounded">
+                  Verified
+                </span>
+              </div>
+
+              <!-- Doc 4 -->
+              <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl flex justify-between items-center">
+                <div>
+                  <p class="font-semibold text-slate-300">Criminal Background Check</p>
+                  <p class="text-[10px] text-slate-500 font-mono mt-0.5">bg_check_agency_report.pdf</p>
+                </div>
+                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] font-bold px-2 py-0.5 rounded">
+                  Pending Review
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
