@@ -10,7 +10,7 @@ import { DigitalOnboardingComponent } from '../components/digital-onboarding/dig
 import { PerformanceTalentComponent } from '../components/performance-talent/performance-talent.component';
 import { LearningDevelopmentComponent } from '../components/learning-development/learning-development.component';
 import { AnalyticsExperienceComponent } from '../components/analytics-experience/analytics-experience.component';
-
+import {Mat_Icon} from "../../../shared/ui.module"
 @Component({
   selector: 'app-hrms',
   standalone: true,
@@ -25,7 +25,8 @@ import { AnalyticsExperienceComponent } from '../components/analytics-experience
     DigitalOnboardingComponent,
     PerformanceTalentComponent,
     LearningDevelopmentComponent,
-    AnalyticsExperienceComponent
+    AnalyticsExperienceComponent,
+    Mat_Icon
   ],
   templateUrl: './hrms.component.html',
   styleUrl: './hrms.component.css'
@@ -37,4 +38,5 @@ export class HrmsComponent {
   setActiveTab(tab: string) {
     this.activeTab.set(tab);
   }
+  today = new Date();
 }

@@ -8,7 +8,7 @@ export interface Employee {
   joinDate: string;
   status: EmployeeStatus;
   salary: number;
-  performanceRating: number;
+  performanceRating?: number;
 }
 
 export interface WorkflowStep {

@@ -2,11 +2,19 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HrmsService, Employee } from '../../services/hrms.service';
-
+import { EmployeeTableComponent } from './components/employee-table/employee-table.component';
+import { EmployeeFilterComponent } from './components/employee-filters/employee-filters.component';
+import { AddEmployeeModalComponent } from './components/add-employee-modal/add-employee-modal.component';
+import { PayslipModalComponent } from './components/payslip-modal/payslip-modal.component';
 @Component({
   selector: 'app-employee-directory',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,
+     EmployeeTableComponent, 
+     EmployeeFilterComponent,
+     AddEmployeeModalComponent,
+     PayslipModalComponent
+    ],
   templateUrl: './employee-directory.component.html',
   styles: [`
     :host { display: block; }
@@ -15,103 +23,99 @@ import { HrmsService, Employee } from '../../services/hrms.service';
 export class EmployeeDirectoryComponent {
   private hrmsService = inject(HrmsService);
 
-  // Expose signals from service
   employees = this.hrmsService.employees;
-  departments = ['All', 'Engineering', 'Design', 'Product', 'HR', 'Sales'];
 
-  // Local State
-  searchQuery = signal<string>('');
-  selectedDepartment = signal<string>('All');
-  isAddModalOpen = signal<boolean>(false);
+  searchQuery = signal('');
+  selectedDepartment = signal('All');
+
+  isAddModalOpen = signal(false);
   selectedPayslipEmployee = signal<Employee | null>(null);
 
-  // New Employee Form Model
-  newEmployee = {
-    name: '',
-    role: '',
-    department: 'Engineering',
-    email: '',
-    joinDate: new Date().toISOString().split('T')[0],
-    status: 'Active' as const,
-    salary: 80000
-  };
+  departments =signal<string[]>([
+    'All',
+    'Engineering',
+    'Design',
+    'Product',
+    'HR',
+    'Sales'
+  ]);
+  newEmployee = signal<Employee>({
+  id: '',
+  name: '',
+  email: '',
+  role: '',
+  department: 'Engineering',
+  joinDate: '',
+  status: 'Active',
+  salary: 0,
+  performanceRating:0
+});
 
-  // Filtered employees computed
   filteredEmployees = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim();
+    const query = this.searchQuery().toLowerCase();
     const dept = this.selectedDepartment();
+
     return this.employees().filter(emp => {
-      const matchesSearch = emp.name.toLowerCase().includes(query) || 
-                            emp.role.toLowerCase().includes(query) || 
-                            emp.id.toLowerCase().includes(query) || 
-                            emp.email.toLowerCase().includes(query);
-      const matchesDept = dept === 'All' || emp.department === dept;
+      const matchesSearch =
+        emp.name.toLowerCase().includes(query) ||
+        emp.role.toLowerCase().includes(query) ||
+        emp.email.toLowerCase().includes(query) ||
+        emp.id.toLowerCase().includes(query);
+
+      const matchesDept =
+        dept === 'All' || emp.department === dept;
+
       return matchesSearch && matchesDept;
     });
   });
 
-  openAddModal() {
-    this.isAddModalOpen.set(true);
-  }
-
-  closeAddModal() {
-    this.isAddModalOpen.set(false);
-    this.resetForm();
-  }
-
-  saveEmployee() {
-    if (!this.newEmployee.name || !this.newEmployee.role || !this.newEmployee.email) {
-      alert('Please fill out all required fields.');
-      return;
-    }
-    
-    this.hrmsService.addEmployee({
-      name: this.newEmployee.name,
-      role: this.newEmployee.role,
-      department: this.newEmployee.department,
-      email: this.newEmployee.email,
-      joinDate: this.newEmployee.joinDate,
-      status: this.newEmployee.status,
-      salary: Number(this.newEmployee.salary)
-    });
-    
-    this.closeAddModal();
-  }
-
   deleteEmployee(id: string) {
-    if (confirm('Are you sure you want to terminate/remove this employee record?')) {
-      this.hrmsService.deleteEmployee(id);
-    }
+    this.hrmsService.deleteEmployee(id);
   }
 
-  viewPayslip(employee: Employee) {
-    this.selectedPayslipEmployee.set(employee);
+  viewPayslip(emp: Employee) {
+    this.selectedPayslipEmployee.set(emp);
   }
 
   closePayslip() {
     this.selectedPayslipEmployee.set(null);
   }
+ openAddModal() {
+  this.isAddModalOpen.set(true);
+}
 
-  resetForm() {
-    this.newEmployee = {
-      name: '',
-      role: '',
-      department: 'Engineering',
-      email: '',
-      joinDate: new Date().toISOString().split('T')[0],
-      status: 'Active',
-      salary: 80000
-    };
+closeAddModal() {
+  this.isAddModalOpen.set(false);
+}
+addEmployee(emp: Employee) {
+  this.hrmsService.addEmployee(emp);
+}
+saveEmployee() {
+  const emp = this.newEmployee();
+
+  const newEmp: Employee = {
+    ...emp,
+    id: crypto.randomUUID()
+  };
+
+  this.hrmsService.addEmployee(newEmp);
+
+  // reset form
+  this.newEmployee.set({
+    id: '',
+    name: '',
+    email: '',
+    role: '',
+    department: 'Engineering',
+    joinDate: '',
+    status: 'Active',
+    salary: 0,
+     performanceRating:0
+  });
+
+  this.closeAddModal();
+}
+  getCurrentDateTime(){
+    
   }
-
-  getCurrentDateTime(): string {
-    return new Date().toLocaleString();
-  }
-
-  // Define your status map in the component
-readonly statusOptions = [
-  { value: 'Active', label: 'Active (Onsite)' },
-  { value: 'Remote', label: 'Remote' },
-  { value: 'On Leave', label: 'On Leave' }
-] as const;
 }
